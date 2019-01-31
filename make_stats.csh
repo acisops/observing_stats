@@ -1,7 +1,14 @@
 #!/usr/bin/env tcsh
 
+echo -n "Username: "
+set username = $<
+stty -echo 
+echo -n "Password: "
+set password = $<
+stty echo
+
 # get ASCDS tools (sqsh, param_extract)
-source ~/.ascrc
+source /home/ascds/DS.release/config/system/.ascrc
 # get rdb tools
 source /proj/axaf/simul/etc/mst_envs.tcsh
 
@@ -41,9 +48,9 @@ rm -f obscat_acis_?? obscat_hrc_?? *remarks *winparams *abstracts
 foreach ao ( $aolist )
 
    echo param_extract -a -A $ao -b -o obscat_acis_${ao}
-   param_extract -a -A $ao -b -o obscat_acis_${ao} >! obscat_acis_${ao}.log
+   echo "$username\n$password" | param_extract -a -A $ao -b -o obscat_acis_${ao} >! obscat_acis_${ao}.log
    echo param_extract -h -A $ao -b -o obscat_hrc_${ao} 
-   param_extract -h -A $ao -b -o obscat_hrc_${ao} >! obscat_hrc_${ao}.log
+   echo "$username\n$password" | param_extract -h -A $ao -b -o obscat_hrc_${ao} >! obscat_hrc_${ao}.log
 
 end
 rm -f *remarks *winparams *abstracts
@@ -52,7 +59,7 @@ date +%D >! date_extracted.txt
 
 # now go use sqsh to get the hrc parameters to file hrc_test
 #
-/usr/local/bin/sqsh -S ocatsqlsrv -Uedgar -w 400 < hrc_extract.sqsh >! hrc_obscat_test.txt
+/usr/local/bin/sqsh -S ocatsqlsrv -U "$username" -P "$password" -w 400 < hrc_extract.sqsh >! hrc_obscat_test.txt
 
 # endif
 # end of obscat extraction; comment out if the 'if (0) then' line is commented out.
